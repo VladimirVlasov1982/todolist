@@ -13,3 +13,7 @@ pip install -r requirements.txt
 ```
 docker run --name todolist -e POSTGRES_PASSWORD=postgres -p 5432:5432 -d postgres
 ```
+Для начала нужно создать необходимые таблицы в базе данных с помощью команды:
+```
+python3 manage.py migrate
+```
