@@ -1,0 +1,24 @@
+version: "3.8"
+
+services:
+  db:
+    container_name: todolist-database
+    image: postgres:14.6-alpine
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - todolist_pg_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: pg_isready -U ${DB_USER} -d ${DB_NAME}
+      interval: 3s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  todolist_pg_data:
+    driver: local

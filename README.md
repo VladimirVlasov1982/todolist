@@ -5,13 +5,10 @@
 * стек (python3.10.4, Django, Postgres)
 ***
 ### Подготовка проекта
-Установите зависимости проекта
+
+Выполните команду:
 ```
-pip install -r requirements.txt
-```
-Установите docker-контейнер с уже готовой и настроенной СУБД:
-```
-docker run --name todolist -e POSTGRES_PASSWORD=postgres -p 5432:5432 -d postgres
+docker-compose up -d
 ```
 Для начала нужно создать необходимые таблицы в базе данных с помощью команды:
 ```
