@@ -29,6 +29,6 @@ jobs:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           password: ${{ secrets.PASSWORD }}
-          source: "deploy/docker-compose.yaml, deploy/.env"
+          source: "deploy/docker-compose.yaml,deploy/.env"
           target: "django_app_ci"
           strip_components: 1
