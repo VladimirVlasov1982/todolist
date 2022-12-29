@@ -4,6 +4,7 @@ version: "3.8"
 services:
 
   db:
+    container_name: todolist-database
     image: postgres:14.6-alpine
     restart: always
     environment:
@@ -35,11 +36,6 @@ services:
         condition: service_healthy
     ports:
       - "8000:8000"
-    healthcheck:
-      test: python -c 'import http.client;http.client.HTTPConnection("127.0.0.1:8000", timeout=1).request("GET", "/ping/")'
-      interval: 3s
-      timeout: 3s
-      retries: 5
     networks:
       - backend_nw
       - frontend_nw
