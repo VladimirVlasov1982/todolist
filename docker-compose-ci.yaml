@@ -28,9 +28,9 @@ services:
     restart: always
     environment:
       DB_HOST: db
-      DB_PASSWORD: ${DB_PASSWORD}
-      DB_USER: ${DB_USER}
-      DB_NAME: ${DB_NAME}
+      DB_PASSWORD: $DB_PASSWORD
+      DB_USER: $DB_USER
+      DB_NAME: $DB_NAME
     depends_on:
       db:
         condition: service_healthy
@@ -63,10 +63,11 @@ services:
 
   migrations:
     image: vladimirvlasov82/todolist_app:$GITHUB_REF_NAME-$GITHUB_RUN_ID
-    env_file:
-      - ./.env
     environment:
       DB_HOST: db
+      DB_PASSWORD: $DB_PASSWORD
+      DB_USER: $DB_USER
+      DB_NAME: $DB_NAME
     depends_on:
       db:
         condition: service_healthy
