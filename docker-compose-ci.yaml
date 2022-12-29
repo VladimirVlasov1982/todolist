@@ -4,7 +4,6 @@ version: "3.8"
 services:
 
   db:
-    container_name: todolist-database
     image: postgres:14.6-alpine
     restart: always
     environment:
