@@ -41,7 +41,7 @@ jobs:
       - name: Update docker compose
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          TAG_NAME: ${{ steps.vars.output.tag }}
+          TAG_NAME: ${{ steps.vars.outputs.tag }}
         run: |
           envsubst '$DOCKER_USERNAME,$TAG_NAME' < deploy/docker-compose.prod.yaml > deploy/docker-compose.yaml
           rm -f deploy/docker-compose.prod.yaml
