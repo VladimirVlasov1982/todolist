@@ -7,10 +7,16 @@ from core.serializers import CreateUserSerializer, LoginSerializer, ProfileSeria
 
 
 class SignupView(generics.CreateAPIView):
+    """
+    Регистрация пользователя
+    """
     serializer_class = CreateUserSerializer
 
 
 class LoginView(generics.CreateAPIView):
+    """
+    Авторизация пользователя
+    """
     serializer_class = LoginSerializer
 
     def create(self, request, *args, **kwargs):
@@ -25,22 +31,27 @@ class LoginView(generics.CreateAPIView):
 
 
 class ProfileView(generics.RetrieveUpdateDestroyAPIView):
+    """
+    Профиль пользователя. Просмотр, обновление, logout
+    """
     queryset = User.objects.all()
     serializer_class = ProfileSerializer
-    permission_classes = (permissions.IsAuthenticated, )
+    permission_classes = (permissions.IsAuthenticated,)
 
     def get_object(self):
         return self.request.user
 
-    def delete(self, request, *args, **kwargs):
+    def destroy(self, request, *args, **kwargs):
         logout(request)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class UpdatePasswordView(generics.UpdateAPIView):
-    queryset = User.objects.all()
+    """
+    Смена пароля пользователя
+    """
     serializer_class = UpdatePasswordSerializer
-    permission_classes = (permissions.IsAuthenticated, )
+    permission_classes = (permissions.IsAuthenticated,)
 
     def get_object(self):
         return self.request.user
