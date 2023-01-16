@@ -33,7 +33,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: build
     steps:
-      - name: Checkout
+      - name:
         uses: actions/checkout@v3
       - name: Get tag
         id: vars

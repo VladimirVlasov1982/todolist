@@ -9,4 +9,3 @@
 !poetry.lock
 !pyproject.toml
 !entrypoint.sh
-!deploy/.env
