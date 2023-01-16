@@ -45,7 +45,7 @@ jobs:
         run: |
           envsubst '$DOCKER_USERNAME,$TAG_NAME' < deploy/docker-compose.prod.yaml > deploy/docker-compose.yaml
           rm -f deploy/docker-compose.prod.yaml
-      - name: Decrypt .env
+      - name: Decrypt prod.env
         uses: anthonykgross/ansible-vault-cli-github-action@v1
         with:
           vault_key: ${{ secrets.ANSIBLE_VAULT_PASSWORD }}
