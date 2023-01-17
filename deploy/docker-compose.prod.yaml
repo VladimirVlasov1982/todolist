@@ -22,7 +22,7 @@ services:
     image: ${DOCKER_USERNAME}/todolist:${TAG_NAME}
     restart: always
     env_file:
-      - .env
+      - ./.env
     depends_on:
       db:
         condition: service_healthy
@@ -30,7 +30,7 @@ services:
   collect_static:
     image: ${DOCKER_USERNAME}/todolist:${TAG_NAME}
     env_file:
-      - .env
+      - ./.env
     depends_on:
       db:
         condition: service_healthy
@@ -39,7 +39,7 @@ services:
       - django_static:/opt/static
 
   frontend:
-    image: sermalenk/skypro-front:lesson-34
+    image: sermalenk/skypro-front:lesson-35
     restart: always
     ports:
       - "80:80"
