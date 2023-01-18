@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from core.serializers import ProfileSerializer
-from goals.models import GoalCategory
+from goals.models import GoalCategory, Goal
 
 
 class GoalCategoryCreateSerializer(serializers.ModelSerializer):
@@ -27,3 +27,33 @@ class GoalCategorySerializer(serializers.ModelSerializer):
         model = GoalCategory
         fields = '__all__'
         read_only_fields = ('id', 'created', 'updated', 'user',)
+
+
+class GoalCreateSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор создания цели
+    """
+
+    class Meta:
+        model = Goal
+        read_only_fields = ('id', 'created', 'updated',)
+        fields = '__all__'
+
+    def validate_category(self, value: GoalCategory) -> GoalCategory:
+        if value.is_deleted:
+            raise serializers.ValidationError('Категория удалена')
+        if value.user != self.context['request'].user:
+            raise serializers.ValidationError('Не владелец категории')
+        return value
+
+
+class GoalSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор цели
+    """
+
+    category = GoalCategorySerializer(read_only=True)
+
+    class Meta:
+        model = Goal
+        fields = '__all__'
