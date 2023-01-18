@@ -3,9 +3,10 @@ from rest_framework import generics, permissions, filters
 from rest_framework.pagination import LimitOffsetPagination
 
 from goals.filters import GoalDateFilter
-from goals.models import GoalCategory, Goal
+from goals.models import GoalCategory, Goal, GoalComment
 from goals.permissions import IsOwnerCategoryOrNot, IsOwnerGoalOrNot
-from goals.serializers import GoalCategoryCreateSerializer, GoalCategorySerializer, GoalCreateSerializer, GoalSerializer
+from goals.serializers import GoalCategoryCreateSerializer, GoalCategorySerializer, GoalCreateSerializer, \
+    GoalSerializer, GoalCommentCreateSerializer, GoalCommentSerializer
 
 
 class GoalCategoryCreateView(generics.CreateAPIView):
@@ -97,3 +98,44 @@ class GoalView(generics.RetrieveUpdateDestroyAPIView):
         instance.status = 4
         instance.save()
         return instance
+
+
+class GoalCommentCreateView(generics.CreateAPIView):
+    """
+    Создать комментарий для целей
+    """
+    model = GoalComment
+    permission_classes = (permissions.IsAuthenticated,)
+    serializer_class = GoalCommentCreateSerializer
+
+
+class GoalCommentListView(generics.ListAPIView):
+    """
+    Список комментариев для целей
+    """
+    model = GoalComment
+    permission_classes = (permissions.IsAuthenticated,)
+    serializer_class = GoalCommentSerializer
+    pagination_class = LimitOffsetPagination
+    filter_backends = (DjangoFilterBackend, filters.OrderingFilter,)
+    filterset_fields = ['goal']
+    ordering_fields = ('created',)
+    ordering = ('-created',)
+
+    def get_queryset(self):
+        return GoalComment.objects.filter(
+            user_id=self.request.user.pk,
+        )
+
+
+class GoalCommentView(generics.RetrieveUpdateDestroyAPIView):
+    """
+    Просмотр, редактирование и удаление комментария
+    """
+    model = GoalComment
+    permission_classes = (permissions.IsAuthenticated,)
+    serializer_class = GoalCommentSerializer
+
+    def get_queryset(self):
+        return GoalComment.objects.filter(
+            user_id=self.request.user.id, )

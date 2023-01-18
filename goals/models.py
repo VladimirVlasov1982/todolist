@@ -3,26 +3,6 @@ from django.db import models
 from core.models import User
 
 
-class Status(models.IntegerChoices):
-    """
-    Статус
-    """
-    to_do = 1, 'К выполнению'
-    in_progress = 2, 'В работе'
-    done = 3, 'Выполнено'
-    archived = 4, 'Архив'
-
-
-class Priority(models.IntegerChoices):
-    """
-    Приоритет
-    """
-    low = 1, 'Низкий'
-    medium = 2, 'Средний'
-    high = 3, 'Высокий'
-    critical = 4, 'Критический'
-
-
 class DatesModelMixin(models.Model):
     """
     Миксин для моделей с полями даты
@@ -48,11 +28,33 @@ class GoalCategory(DatesModelMixin):
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
 
+    def __str__(self):
+        return self.title
+
 
 class Goal(DatesModelMixin):
     """
     Модель цели
     """
+
+    class Status(models.IntegerChoices):
+        """
+        Статус
+        """
+        to_do = 1, 'К выполнению'
+        in_progress = 2, 'В работе'
+        done = 3, 'Выполнено'
+        archived = 4, 'Архив'
+
+    class Priority(models.IntegerChoices):
+        """
+        Приоритет
+        """
+        low = 1, 'Низкий'
+        medium = 2, 'Средний'
+        high = 3, 'Высокий'
+        critical = 4, 'Критический'
+
     title = models.CharField(verbose_name='Название', max_length=255)
     description = models.TextField(verbose_name='Описание')
     category = models.ForeignKey(GoalCategory, on_delete=models.PROTECT, verbose_name='Категория')
@@ -66,3 +68,24 @@ class Goal(DatesModelMixin):
     class Meta:
         verbose_name = 'Цель'
         verbose_name_plural = 'Цели'
+
+    def __str__(self):
+        return self.title
+
+
+class GoalComment(DatesModelMixin):
+    """
+    Модель комментариев
+    """
+    goal = models.ForeignKey(Goal, on_delete=models.CASCADE, verbose_name='Цель')
+    text = models.TextField(verbose_name='Комментарий')
+    user = models.ForeignKey(User, on_delete=models.PROTECT, verbose_name='Автор')
+
+    objects = models.Manager()
+
+    class Meta:
+        verbose_name = 'Комментарий'
+        verbose_name_plural = 'Комментарии'
+
+    def __str__(self):
+        return self.text
