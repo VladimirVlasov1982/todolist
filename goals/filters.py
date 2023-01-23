@@ -12,11 +12,11 @@ class GoalDateFilter(rest_framework.FilterSet):
     class Meta:
         model = Goal
         fields = {
-            'due_date': ('gte', 'lte'),
+            'due_date': ('lte', 'gte'),
             'category': ('exact', 'in'),
             'status': ('exact', 'in'),
             'priority': ('exact', 'in'),
         }
         filter_overrides = {
-            models.DateTimeField: {'filter_class': django_filters.IsoDateTimeFilter}
+            models.DateField: {'filter_class': django_filters.IsoDateTimeFilter}
         }

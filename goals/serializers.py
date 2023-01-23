@@ -1,43 +1,43 @@
 from rest_framework import serializers
-
 from core.serializers import ProfileSerializer
 from goals.models import GoalCategory, Goal, GoalComment
 
 
 class GoalCategoryCreateSerializer(serializers.ModelSerializer):
     """
-    Сериализатор создания категории цели
+    Сериализатор создания категории
     """
 
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:
         model = GoalCategory
-        read_only_fields = ('id', 'created', 'updated', 'user',)
         fields = '__all__'
+        read_only_fields = ('id', 'created', 'updated', 'user', 'is_deleted')
 
 
 class GoalCategorySerializer(serializers.ModelSerializer):
     """
-    Сериализатор категории цели
+    Сериализатор категории
     """
     user = ProfileSerializer(read_only=True)
 
     class Meta:
         model = GoalCategory
         fields = '__all__'
-        read_only_fields = ('id', 'created', 'updated', 'user',)
+        read_only_fields = ('id', 'created', 'updated', 'user', 'is_deleted')
 
 
 class GoalCreateSerializer(serializers.ModelSerializer):
     """
     Сериализатор создания цели
     """
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:
         model = Goal
-        read_only_fields = ('id', 'created', 'updated',)
         fields = '__all__'
+        read_only_fields = ('id', 'created', 'updated', 'user')
 
     def validate_category(self, value: GoalCategory) -> GoalCategory:
         if value.is_deleted:
@@ -55,24 +55,24 @@ class GoalSerializer(serializers.ModelSerializer):
     class Meta:
         model = Goal
         fields = '__all__'
+        read_only_fields = ('id', 'created', 'updated', 'user')
 
 
 class GoalCommentCreateSerializer(serializers.ModelSerializer):
     """
-    Сериализатор создания комментария цели
+    Сериализатор создания комментария
     """
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
-    goal = serializers.PrimaryKeyRelatedField(queryset=Goal.objects.all())
 
     class Meta:
         model = GoalComment
-        read_only_fields = ('id', 'created', 'updated', 'user',)
         fields = '__all__'
+        read_only_fields = ('id', 'created', 'updated', 'user',)
 
 
 class GoalCommentSerializer(serializers.ModelSerializer):
     """
-    Сериализатор комментария цели
+    Сериализатор комментария
     """
     user = ProfileSerializer(read_only=True)
 

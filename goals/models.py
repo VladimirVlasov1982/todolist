@@ -56,12 +56,20 @@ class Goal(DatesModelMixin):
         critical = 4, 'Критический'
 
     title = models.CharField(verbose_name='Название', max_length=255)
-    description = models.TextField(verbose_name='Описание')
-    category = models.ForeignKey(GoalCategory, on_delete=models.PROTECT, verbose_name='Категория')
-    status = models.PositiveSmallIntegerField(verbose_name='Статус', choices=Status.choices, default=Status.to_do)
-    priority = models.PositiveSmallIntegerField(verbose_name='Приоритет', choices=Priority.choices,
-                                                default=Priority.medium)
-    due_date = models.DateTimeField(verbose_name='Срок выполнения')
+    description = models.TextField(verbose_name='Описание', null=True, blank=True)
+    category = models.ForeignKey(GoalCategory, on_delete=models.PROTECT, verbose_name='Категория', related_name='goals')
+    status = models.PositiveSmallIntegerField(
+        verbose_name='Статус',
+        choices=Status.choices,
+        default=Status.to_do
+    )
+    priority = models.PositiveSmallIntegerField(
+        verbose_name='Приоритет',
+        choices=Priority.choices,
+        default=Priority.medium
+    )
+    due_date = models.DateField(verbose_name='Срок выполнения', null=True, blank=True)
+    user = models.ForeignKey(User, on_delete=models.PROTECT, verbose_name='Автор', related_name='goals')
 
     objects = models.Manager()
 
@@ -77,9 +85,9 @@ class GoalComment(DatesModelMixin):
     """
     Модель комментариев
     """
-    goal = models.ForeignKey(Goal, on_delete=models.CASCADE, verbose_name='Цель')
+    goal = models.ForeignKey(Goal, on_delete=models.CASCADE, verbose_name='Цель', related_name='comments')
     text = models.TextField(verbose_name='Комментарий')
-    user = models.ForeignKey(User, on_delete=models.PROTECT, verbose_name='Автор')
+    user = models.ForeignKey(User, on_delete=models.PROTECT, verbose_name='Автор', related_name='comments')
 
     objects = models.Manager()
 
