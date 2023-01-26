@@ -4,7 +4,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, permissions, filters
 from goals.filters import GoalDateFilter
 from goals.models import GoalCategory, Goal, GoalComment, Board
-from goals.permissions import IsOwnerOrReadOnly, BoardPermissions
+from goals.permissions import IsOwnerOrReadOnly, BoardPermissions, ParticipantPermissions
 from goals.serializers import GoalCategoryCreateSerializer, GoalCategorySerializer, GoalCreateSerializer, \
     GoalSerializer, GoalCommentCreateSerializer, GoalCommentSerializer, BoardCreateSerializer, BoardListSerializer, \
     BoardSerializer
@@ -32,8 +32,9 @@ class GoalCategoryListView(generics.ListAPIView):
 
     def get_queryset(self):
         return GoalCategory.objects.select_related('user').filter(
-            user_id=self.request.user.id,
             is_deleted=False,
+            board_id__participants__user_id=self.request.user.id,
+            board=self.request.query_params['board'],
         )
 
 
@@ -42,12 +43,12 @@ class GoalCategoryView(generics.RetrieveUpdateDestroyAPIView):
     Просмотр, редактирование и удаление категории
     """
     model = GoalCategory
-    permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (permissions.IsAuthenticated, ParticipantPermissions)
     serializer_class = GoalCategorySerializer
 
     def get_queryset(self):
         return GoalCategory.objects.select_related('user').filter(
-            user_id=self.request.user.id,
+            board_id__participants__user_id=self.request.user.id,
             is_deleted=False,
         )
 

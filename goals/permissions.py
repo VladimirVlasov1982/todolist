@@ -28,3 +28,14 @@ class BoardPermissions(permissions.BasePermission):
             board=obj,
             role=BoardParticipant.Role.owner,
         ).exists()
+
+
+class ParticipantPermissions(permissions.BasePermission):
+    message = 'Недостаточно прав'
+
+    def has_object_permission(self, request, view, obj):
+        if not request.user.is_authenticated:
+            return False
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        return obj.board.participants.filter(role__in=[1, 2]).exists()
