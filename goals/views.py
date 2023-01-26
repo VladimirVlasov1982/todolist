@@ -31,10 +31,15 @@ class GoalCategoryListView(generics.ListAPIView):
     search_fields = ['title']
 
     def get_queryset(self):
+        if self.request.query_params.get('board'):
+            return GoalCategory.objects.select_related('user').filter(
+                is_deleted=False,
+                board_id__participants__user_id=self.request.user.id,
+                board=self.request.query_params.get('board', None),
+            )
         return GoalCategory.objects.select_related('user').filter(
             is_deleted=False,
             board_id__participants__user_id=self.request.user.id,
-            board=self.request.query_params['board'],
         )
 
 
