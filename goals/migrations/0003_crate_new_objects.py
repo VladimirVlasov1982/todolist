@@ -11,21 +11,23 @@ def create_objects(apps, schema_editor):
     BoardParticipant = apps.get_model('goals', 'BoardParticipant')
     GoalCategory = apps.get_model('goals', 'GoalCategory')
 
+    now = timezone.now()
+
     with transaction.atomic():
-        for user in User.objects.all():
+        for user_id in User.objects.values_list('id', flat=True):
             new_board = Board.objects.create(
                 title='Мои цели',
-                created=timezone.now(),
-                updated=timezone.now(),
+                created=now,
+                updated=now,
             )
             BoardParticipant.objects.create(
-                user=user,
+                user_id=user_id,
                 board=new_board,
                 role=1,
-                created=timezone.now(),
-                updated=timezone.now(),
+                created=now,
+                updated=now,
             )
-            GoalCategory.objects.filter(user=user).update(board=new_board)
+            GoalCategory.objects.filter(user_id=user_id).update(board=new_board)
 
 
 class Migration(migrations.Migration):

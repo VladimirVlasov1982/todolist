@@ -1,6 +1,6 @@
 from rest_framework import permissions
 
-from goals.models import BoardParticipant
+from goals.models import BoardParticipant, GoalCategory, Board, Goal, GoalComment
 
 
 class IsOwnerOrReadOnly(permissions.BasePermission):
@@ -12,30 +12,44 @@ class IsOwnerOrReadOnly(permissions.BasePermission):
         return obj.user_id == request.user.id
 
 
-class BoardPermissions(permissions.BasePermission):
+class BoardPermissions(permissions.IsAuthenticated):
     message = 'Вы не являетесь владельцем доски'
 
-    def has_object_permission(self, request, view, obj):
-        if not request.user.is_authenticated:
-            return False
-        if request.method in permissions.SAFE_METHODS:
-            return BoardParticipant.objects.filter(
-                user_id=request.user.id,
-                board=obj,
-            ).exists()
-        return BoardParticipant.objects.filter(
-            user_id=request.user.id,
-            board=obj,
-            role=BoardParticipant.Role.owner,
-        ).exists()
+    def has_object_permission(self, request, view, obj: Board):
+        _filters: dict = {'user': request.user, 'board': obj}
+        if request.method not in permissions.SAFE_METHODS:
+            _filters['role__in'] = [BoardParticipant.Role.owner]
+
+        return BoardParticipant.objects.filter(**_filters).exists()
 
 
-class ParticipantPermissions(permissions.BasePermission):
+class GoalCategoryPermissions(permissions.IsAuthenticated):
     message = 'Недостаточно прав'
 
-    def has_object_permission(self, request, view, obj):
-        if not request.user.is_authenticated:
-            return False
-        if request.method in permissions.SAFE_METHODS:
-            return True
-        return obj.board.participants.filter(role__in=[1, 2]).exists()
+    def has_object_permission(self, request, view, obj: GoalCategory):
+        _filters: dict = {'user_id': request.user.id, 'board_id': obj.board_id}
+        if request.method not in permissions.SAFE_METHODS:
+            _filters['role__in'] = [BoardParticipant.Role.owner, BoardParticipant.Role.writer]
+
+        return BoardParticipant.objects.filter(**_filters).exists()
+
+
+class GoalPermissions(permissions.IsAuthenticated):
+    message = 'Недостаточно прав'
+
+    def has_object_permission(self, request, view, obj: Goal):
+        _filters: dict = {'user_id': request.user.id, 'board_id': obj.category.board_id}
+        if request.method not in permissions.SAFE_METHODS:
+            _filters['role__in'] = [BoardParticipant.Role.owner, BoardParticipant.Role.writer]
+
+        return BoardParticipant.objects.filter(**_filters).exists()
+
+
+class CommentsPermissions(permissions.IsAuthenticated):
+    message = 'Недостаточно прав'
+
+    def has_object_permission(self, request, view, obj: GoalComment):
+        return any((
+            request.method in permissions.SAFE_METHODS,
+            obj.user.id == request.user.id
+        ))
