@@ -14,13 +14,75 @@ class DatesModelMixin(models.Model):
         abstract = True
 
 
+class Board(DatesModelMixin):
+    """
+    Модель доски
+    """
+    title = models.CharField(verbose_name='Название', max_length=255)
+    is_deleted = models.BooleanField(verbose_name='Удалена', default=False)
+
+    objects = models.Manager()
+
+    class Meta:
+        verbose_name = 'Доска'
+        verbose_name_plural = 'Доски'
+
+    def __str__(self):
+        return self.title
+
+
+class BoardParticipant(DatesModelMixin):
+    """
+    Модель участников
+    """
+
+    class Role(models.IntegerChoices):
+        owner = 1, 'Владелец'
+        writer = 2, 'Редактор'
+        reader = 3, 'Читатель'
+
+    board = models.ForeignKey(
+        Board,
+        on_delete=models.PROTECT,
+        verbose_name='Доска',
+        related_name='participants',
+    )
+    user = models.ForeignKey(
+        User,
+        on_delete=models.PROTECT,
+        verbose_name='Пользователь',
+        related_name='participants',
+    )
+    role = models.PositiveSmallIntegerField(
+        verbose_name='Роль',
+        choices=Role.choices,
+        default=Role.owner,
+    )
+
+    objects = models.Manager()
+
+    class Meta:
+        unique_together = ('board', 'user')
+        verbose_name = 'Участник'
+        verbose_name_plural = 'Участники'
+
+    def __str__(self):
+        return self.user
+
+
 class GoalCategory(DatesModelMixin):
     """
-    Модель категории цели
+    Модель категории
     """
     title = models.CharField(max_length=255, verbose_name='Название')
     user = models.ForeignKey(User, on_delete=models.PROTECT, verbose_name='Пользователь')
     is_deleted = models.BooleanField(default=False, verbose_name='Удалена')
+    board = models.ForeignKey(
+        Board,
+        verbose_name='Доска',
+        on_delete=models.PROTECT,
+        related_name='categories',
+    )
 
     objects = models.Manager()
 
