@@ -1,14 +1,14 @@
 from pydantic import BaseModel, Field
 
 
-class Chat(BaseModel):
-    id: int
-    first_name: str
-
-
 class MessageFrom(BaseModel):
     id: int
-    first_name: str
+    username: str | None = None
+
+
+class Chat(BaseModel):
+    id: int
+    username: str | None = None
 
 
 class Message(BaseModel):

@@ -27,6 +27,17 @@ services:
       db:
         condition: service_healthy
 
+  bot:
+    image: ${DOCKER_USERNAME}/todolist:${TAG_NAME}
+    env_file:
+      - ./.env
+    depends_on:
+      db:
+        condition: service_healthy
+    command: python3 manage.py runbot
+    volumes:
+      - ./managment/commands:/opt/bot/managment/commands
+
   collect_static:
     image: ${DOCKER_USERNAME}/todolist:${TAG_NAME}
     env_file:
