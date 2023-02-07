@@ -17,7 +17,7 @@ class TgClient:
             response = requests.get(url, params={'offset': offset, 'timeout': timeout})
         except Exception:
             logging.error('Не удалось получить обновления из Telegram')
-            raise ...
+            raise requests.exceptions.ConnectionError('Не удалось получить обновления из Telegram')
         else:
             return GetUpdatesResponse(**response.json())
 
@@ -30,6 +30,6 @@ class TgClient:
             })
         except Exception:
             logging.error('Не удалось отправить сообщение в Telegram')
-            raise ...
+            raise requests.exceptions.ConnectionError('Не удалось отправить сообщение в Telegram')
         else:
             return SendMessageResponse(**response.json())

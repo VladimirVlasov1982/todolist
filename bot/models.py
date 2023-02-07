@@ -1,11 +1,13 @@
 import os
 
 from django.db import models
-
 from core.models import User
 
 
 class TgUser(models.Model):
+    """
+    Модель пользователя Telegram
+    """
     chat_id = models.CharField(max_length=255, unique=True)
     username = models.CharField(max_length=255, null=True, blank=True, default=None)
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Пользователь', null=True, blank=True)

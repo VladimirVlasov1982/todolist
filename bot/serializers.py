@@ -1,10 +1,12 @@
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
-
 from bot.models import TgUser
 
 
 class TgUserSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор пользователя Telegram
+    """
     tg_id = serializers.SlugField(source='chat_id', read_only=True)
 
     class Meta:

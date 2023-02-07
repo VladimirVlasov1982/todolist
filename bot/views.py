@@ -1,12 +1,14 @@
 from rest_framework import generics, permissions
 from rest_framework.response import Response
-
 from bot.serializers import TgUserSerializer
 from bot.tg.client import TgClient
 from todolist import settings
 
 
 class VerificationView(generics.UpdateAPIView):
+    """
+    Верификация пользователя Telegram
+    """
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = TgUserSerializer
 
