@@ -41,7 +41,7 @@ class Command(BaseCommand):
                     self._handle_unverified_user(item.message)
 
     def _handle_unverified_user(self, message: Message):
-        verification_code: str = self.tg_user.verification_code
+        verification_code: str = self.tg_user.set_verification_code()
         self.tg_client.send_message(
             chat_id=message.chat.id,
             text=f'Подтвердите, пожалуйста, свой аккаунт. '
@@ -60,35 +60,22 @@ class Command(BaseCommand):
             case '/goals':
                 self._handle_goals_command(message)
             case '/create':
-                self._handle_get_category_list(message)
-                self._state = 'get_category'
+                self._handle_category_list(message)
             case '/cancel':
+                self.tg_client.send_message(message.chat.id, 'Операция создания цели отменена.')
                 self._state = None
             case _:
                 self._handle_message(message)
 
     def _handle_message(self, message: Message):
-
         if self._state == 'get_category':
-            categories = list(
-                GoalCategory.objects.filter(user_id=self.tg_user.user).exclude(is_deleted=True).values_list('title'))
-            self.logger.info(f'{categories}')
-            cat = list(map(lambda x: x[0], categories))
-            self.logger.info(f'{cat}')
-            if message.text in cat:
-                self._category = GoalCategory.objects.get(title=message.text)
-                self.tg_client.send_message(message.chat.id, 'Введите название цели')
-                self._state = 'create_goal'
-                self.logger.info(f'{self._state}')
-            else:
-                self.tg_client.send_message(message.chat.id, 'Не верно выбрана категория')
-                self._state = None
-                self._handle_incorrect_category()
-
+            self._handle_get_category(message)
         elif self._state == 'create_goal':
-            self._handle_create_goal(message, category=self._category)
+            self._handle_create_goal(message)
+        elif self._state == 'save_category':
+            self._handle_save_category(message)
         else:
-            self.tg_client.send_message(message.chat.id, f'{message.text} не является командой')
+            self.tg_client.send_message(message.chat.id, f'{message.text} не является командой.')
 
     def _handle_goals_command(self, message: Message):
         goals: list[str] = list(
@@ -99,10 +86,13 @@ class Command(BaseCommand):
         )
         self.tg_client.send_message(
             chat_id=message.chat.id,
-            text='\n'.join(goals) if goals else 'Целей не найдено'
+            text='\nВаши цели:\n' + '\n'.join(goals) if goals else 'Целей не найдено.'
         )
+        if not goals:
+            self._state = None
 
-    def _handle_get_category_list(self, message: Message):
+    def _handle_category_list(self, message: Message):
+        self._state = 'get_category'
         category: list[str] = list(
             GoalCategory.objects.filter(user_id=self.tg_user.user).exclude(is_deleted=True).values_list(
                 'title',
@@ -112,24 +102,42 @@ class Command(BaseCommand):
         if category:
             self.tg_client.send_message(
                 chat_id=message.chat.id,
-                text='\nВыберите категорию:\n' + '\n'.join(category)
+                text='\nВыберите категорию:\n' + '\n'.join(category) + '\n/cancel - Отмена.'
             )
-            self._state = 'create_goal'
+            self._state = 'save_category'
+
         else:
+            self._state = None
             self.tg_client.send_message(
                 chat_id=message.chat.id,
-                text='Категории не найдены'
+                text='Категории не найдены. Создайте категорию на сайте.'
             )
-            self._state = None
 
-    def _handle_create_goal(self, message: Message, category: str):
+    def _handle_create_goal(self, message: Message):
+
         goal = Goal.objects.create(
             title=message.text,
-            category=category,
+            category=self._category,
             user_id=self.tg_user.user_id,
         )
-        self.tg_client.send_message(message.chat.id, f'Цель {goal.title} успешно создана')
+        self.tg_client.send_message(message.chat.id, f'Цель {goal.title} успешно создана.')
         self._state = None
 
-    def _handle_incorrect_category(self):
-        self._state = 'get_category'
+    def _handle_get_category(self, message):
+        categories = list(
+            GoalCategory.objects.filter(user_id=self.tg_user.user).exclude(is_deleted=True).values_list('title'))
+        cat = list(map(lambda x: x[0], categories))
+        if len(cat) == 0:
+            self._state = None
+        elif len(cat) != 0 and message.text in cat:
+            self.tg_client.send_message(message.chat.id, 'Введите название цели.')
+            self._state = 'create_goal'
+        else:
+            self.tg_client.send_message(message.chat.id, 'Неверно выбрана категория.')
+
+    def _handle_save_category(self, message: Message):
+        try:
+            self._category = GoalCategory.objects.get(title=message.text)
+        except GoalCategory.DoesNotExist:
+            self._category = None
+        self._handle_get_category(message)
