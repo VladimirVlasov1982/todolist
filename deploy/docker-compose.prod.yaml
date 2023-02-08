@@ -27,6 +27,17 @@ services:
       db:
         condition: service_healthy
 
+  bot:
+    image: ${DOCKER_USERNAME}/todolist:${TAG_NAME}
+    env_file:
+      - ./.env
+    depends_on:
+      db:
+        condition: service_healthy
+    command: python3 manage.py runbot
+    volumes:
+      - ./managment/commands:/opt/bot/managment/commands
+
   collect_static:
     image: ${DOCKER_USERNAME}/todolist:${TAG_NAME}
     env_file:
@@ -39,7 +50,7 @@ services:
       - django_static:/opt/static
 
   frontend:
-    image: sermalenk/skypro-front:lesson-37
+    image: sermalenk/skypro-front:lesson-38
     restart: always
     ports:
       - "80:80"
