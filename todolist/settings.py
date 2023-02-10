@@ -102,26 +102,26 @@ STATIC_ROOT = BASE_DIR.joinpath('static')
 
 AUTH_USER_MODEL = 'core.User'
 
-LOGGING = {
-    'disable_existing_loggers': False,
-    'version': 1,
-    'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
-            'level': 'DEBUG',
-        },
-    },
-    'loggers': {
-        '': {
-            'handlers': ['console'],
-            'level': 'DEBUG',
-            'propagate': False,
-        },
-        'django.db': {
-            'level': 'DEBUG',
-        },
-    },
-}
+# LOGGING = {
+#     'disable_existing_loggers': False,
+#     'version': 1,
+#     'handlers': {
+#         'console': {
+#             'class': 'logging.StreamHandler',
+#             'level': 'DEBUG',
+#         },
+#     },
+#     'loggers': {
+#         '': {
+#             'handlers': ['console'],
+#             'level': 'DEBUG',
+#             'propagate': False,
+#         },
+#         'django.db': {
+#             'level': 'DEBUG',
+#         },
+#     },
+# }
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
