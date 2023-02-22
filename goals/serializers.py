@@ -10,18 +10,11 @@ class BoardCreateSerializer(serializers.ModelSerializer):
     """
     Сериализатор создания доски
     """
-    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:
         model = Board
         fields = '__all__'
         read_only_fields = ('id', 'created', 'updated', 'is_deleted')
-
-    def create(self, validated_data):
-        user = validated_data.pop('user')
-        board = Board.objects.create(**validated_data)
-        BoardParticipant.objects.create(user=user, board=board, role=BoardParticipant.Role.owner)
-        return board
 
 
 class BoardParticipantSerializer(serializers.ModelSerializer):
@@ -36,6 +29,11 @@ class BoardParticipantSerializer(serializers.ModelSerializer):
         slug_field='username',
         queryset=User.objects.all(),
     )
+
+    def validate(self, attrs):
+        if attrs['user'] == self.context['request'].user and attrs['role'] != BoardParticipant.Role.owner:
+            raise PermissionDenied('Не удалось обновить роль владельца')
+        return attrs
 
     class Meta:
         model = BoardParticipant
@@ -58,34 +56,23 @@ class BoardSerializer(serializers.ModelSerializer):
     Сериализатор доски
     """
     participants = BoardParticipantSerializer(many=True)
-    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:
         model = Board
         fields = '__all__'
-        read_only_fields = ('id', 'created', 'updated')
+        read_only_fields = ('id', 'created', 'updated', 'is_deleted')
 
-    def update(self, instance, validated_data):
-        owner = validated_data.pop('user')
-        new_participants = validated_data.pop('participants')
-        new_by_id = {part['user'].id: part for part in new_participants}
-
-        old_participants = instance.participants.exclude(user=owner)
+    def update(self, instance: Board, validated_data: dict) -> Board:
         with transaction.atomic():
-            for old_participant in old_participants:
-                if old_participant.user_id not in new_by_id:
-                    old_participant.delete()
-                else:
-                    if old_participant.role != new_by_id[old_participant.user_id]['role']:
-                        old_participant.role = new_by_id[old_participant.user_id]['role']
-                        old_participant.save()
-                    new_by_id.pop(old_participant.user_id)
-            for new_part in new_by_id.values():
-                BoardParticipant.objects.create(
-                    user=new_part['user'],
-                    board=instance,
-                    role=new_part['role'],
+            BoardParticipant.objects.filter(board=instance).exclude(user=self.context['request'].user).delete()
+            BoardParticipant.objects.bulk_create([
+                BoardParticipant(
+                    user=participant['user'],
+                    role=participant['role'],
+                    board=instance
                 )
+                for participant in validated_data.pop('participants', [])
+            ])
             if title := validated_data.get('title'):
                 instance.title = title
                 instance.save()
@@ -171,7 +158,7 @@ class GoalCommentCreateSerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = ('id', 'created', 'updated', 'user')
 
-    def validate_goal(self, value: Goal):
+    def validate_goal(self, value: Goal) -> Goal:
         if not BoardParticipant.objects.filter(
                 board=value.category.board.pk,
                 role__in=[BoardParticipant.Role.owner, BoardParticipant.Role.writer],
